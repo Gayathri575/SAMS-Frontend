@@ -18,7 +18,16 @@ export default function LoginScreen() {
     try {
       await login(username.trim(), password);
     } catch (error) {
-      const message = error.response?.data?.message || 'Login failed. Please try again.';
+      let message = error.response?.data?.message;
+      if (!message) {
+        if (error.code === 'ECONNABORTED' || error.message?.includes('timeout')) {
+          message = 'Connection timed out. Make sure your phone and laptop are connected to the same Wi-Fi / Hotspot.';
+        } else if (error.message?.includes('Network Error')) {
+          message = 'Cannot reach backend server. Please verify your phone is on the same Wi-Fi network as your laptop.';
+        } else {
+          message = error.message || 'Login failed. Please try again.';
+        }
+      }
       Alert.alert('Login Error', message);
     } finally {
       setSubmitting(false);
